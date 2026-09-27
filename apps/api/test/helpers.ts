@@ -8,8 +8,8 @@ import { loadConfig } from '../src/config';
 import { MemoryMailer } from '../src/services/mailer';
 import { MemoryPushSender } from '../src/services/push';
 
-export const TEST_DATABASE_URL =
-  process.env.TEST_DATABASE_URL ?? 'postgresql://ss:ss@127.0.0.1:55432/supplysync_test?schema=public';
+export { TEST_DATABASE_URL } from './setup-db';
+import { TEST_DATABASE_URL } from './setup-db';
 
 export function testConfig() {
   return loadConfig({

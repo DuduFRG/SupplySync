@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/.expo
+**/.env
+**/.env.*
+apps/mobile/*
+!apps/mobile/package.json
+apps/api/storage
+.git
