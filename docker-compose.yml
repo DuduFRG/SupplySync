@@ -1,0 +1,24 @@
+# Ambiente de desenvolvimento local. Não usar estas credenciais fora da sua máquina.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: supplysync
+      POSTGRES_PASSWORD: supplysync_dev_only
+      POSTGRES_DB: supplysync
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supplysync"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+
+volumes:
+  pgdata:

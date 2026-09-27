@@ -1,0 +1,26 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+
+# Segredos: nunca versionar
+.env
+.env.*
+!.env.example
+
+# API
+apps/api/storage/
+
+# Expo / React Native
+apps/mobile/.expo/
+apps/mobile/ios/
+apps/mobile/android/
+apps/mobile/web-build/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist

@@ -1,0 +1,21 @@
+{
+  "name": "supplysync",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Inventário doméstico compartilhado, reposição inteligente e divisão de custos.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:api": "npm run dev -w @supplysync/api",
+    "dev:mobile": "npm run start -w @supplysync/mobile",
+    "db:migrate": "npm run db:migrate -w @supplysync/api",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "audit": "npm audit --omit=dev"
+  }
+}
