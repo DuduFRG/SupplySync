@@ -4,6 +4,8 @@ Inventário compartilhado da casa, reposição inteligente e divisão de custos 
 Para casais, famílias e grupos de 3 a 6 moradores que perdem tempo (e paciência) com
 "quem comprou o último papel higiênico?".
 
+![Telas do SupplySync](docs/screens.png)
+
 ## O que o MVP entrega
 
 - **Onboarding narrativo em 8 capítulos**: mostra o problema, deixa a pessoa experimentar cada mecânica e termina com o "combinado da casa". Sem botão de pular; capítulos interativos só avançam após a interação. As respostas viram o inventário inicial.
