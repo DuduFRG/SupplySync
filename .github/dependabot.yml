@@ -1,0 +1,50 @@
+version: 2
+updates:
+  # Dependências npm de todo o monorepo (um único package-lock.json na raiz).
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 10
+    labels: [dependencies]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      # Correções e melhorias pequenas chegam juntas em um único PR.
+      minor-e-patch:
+        update-types: [minor, patch]
+        exclude-patterns:
+          - "expo*"
+          - "@expo/*"
+          - "react"
+          - "react-dom"
+          - "react-native*"
+          - "@react-native*"
+    ignore:
+      # O Expo exige versões casadas entre SDK, React e React Native.
+      # Upgrade de SDK é feito à mão com `npx expo install --fix`, nunca pacote a pacote.
+      - dependency-name: "expo*"
+      - dependency-name: "@expo/*"
+      - dependency-name: "@expo-google-fonts/*"
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+      - dependency-name: "react-native*"
+      - dependency-name: "@react-native*"
+      - dependency-name: "@types/react"
+      # Prisma 7+ muda a configuração; migrar de forma planejada.
+      - dependency-name: "prisma"
+        update-types: [version-update:semver-major]
+      - dependency-name: "@prisma/client"
+        update-types: [version-update:semver-major]
+
+  # Ações usadas no CI.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    labels: [dependencies]
+    commit-message:
+      prefix: "chore(ci)"

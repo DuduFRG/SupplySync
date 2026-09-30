@@ -48,6 +48,17 @@ npm run dev:mobile
 
 Em desenvolvimento os e-mails não são enviados: o código de confirmação aparece no log da API.
 
+### No seu celular (Expo Go)
+
+1. Instale o **Expo Go** (App Store ou Google Play). Computador e celular na **mesma rede Wi-Fi**.
+2. Descubra o IP local do computador (`ipconfig` no Windows, `ipconfig getifaddr en0` no macOS).
+3. Em `apps/api/.env`, use `HOST=0.0.0.0`. Em `apps/mobile/.env`, use `EXPO_PUBLIC_API_URL=http://SEU_IP:3333`.
+4. Reinicie a API (`npm run dev:api`) e rode `npm run dev:mobile`.
+5. Escaneie o QR Code: no iPhone pela câmera, no Android pelo próprio Expo Go.
+
+Se a rede bloquear a conexão (Wi-Fi corporativo, por exemplo), use `npx expo start --tunnel` dentro de `apps/mobile`.
+Notificações push não funcionam no Expo Go: para testá-las, gere um development build com `eas build --profile development`.
+
 ## Qualidade
 
 ```bash
