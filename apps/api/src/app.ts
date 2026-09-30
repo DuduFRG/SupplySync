@@ -15,7 +15,7 @@ import { createMailer, type Mailer } from './services/mailer';
 import { createPushSender, type PushSender } from './services/push';
 import { ACCESS_TOKEN_TTL_SECONDS, SessionService } from './services/sessions';
 import { LocalPhotoStorage, type PhotoStorage } from './services/storage';
-import { MemoryThrottle, RedisThrottle, type Throttle } from './services/throttle';
+import { MemoryThrottle, RedisThrottle, ResilientThrottle, type Throttle } from './services/throttle';
 import { authRoutes } from './modules/auth/routes';
 import { meRoutes } from './modules/me/routes';
 import { householdRoutes } from './modules/households/routes';
@@ -90,6 +90,16 @@ export async function buildApp({ config, prisma: injectedPrisma, overrides = {} 
 
   const prisma = injectedPrisma ?? new PrismaClient();
   const redis = config.REDIS_URL ? new Redis(config.REDIS_URL, { maxRetriesPerRequest: 2, enableOfflineQueue: false }) : null;
+  // Sem este listener o ioredis registra "Unhandled error event" a cada tentativa de reconexão.
+  let redisDownLogged = false;
+  redis?.on('error', (err) => {
+    if (!redisDownLogged) app.log.error({ err }, 'redis: indisponível, usando limites locais');
+    redisDownLogged = true;
+  });
+  redis?.on('ready', () => {
+    if (redisDownLogged) app.log.info('redis: conexão restabelecida');
+    redisDownLogged = false;
+  });
 
   await app.register(jwt, {
     secret: config.JWT_ACCESS_SECRET,
@@ -107,7 +117,11 @@ export async function buildApp({ config, prisma: injectedPrisma, overrides = {} 
     mailer: overrides.mailer ?? createMailer(config, app.log),
     push: overrides.push ?? createPushSender(config, prisma, app.log),
     storage: overrides.storage ?? new LocalPhotoStorage(config.STORAGE_DIR),
-    throttle: overrides.throttle ?? (redis ? new RedisThrottle(redis) : new MemoryThrottle()),
+    throttle:
+      overrides.throttle ??
+      (redis
+        ? new ResilientThrottle(new RedisThrottle(redis), (err) => app.log.warn({ err }, 'throttle: fallback para memória'))
+        : new MemoryThrottle()),
   };
   app.decorate('services', services);
   app.decorateRequest('userId', '');
@@ -137,7 +151,9 @@ export async function buildApp({ config, prisma: injectedPrisma, overrides = {} 
     global: true,
     max: 300,
     timeWindow: '1 minute',
-    ...(redis ? { redis, nameSpace: 'rl:' } : {}),
+    // Redis fora do ar não derruba a API: o limite por IP é pulado e a borda (Cloudflare)
+    // continua limitando. Limites por conta seguem valendo via ResilientThrottle.
+    ...(redis ? { redis, nameSpace: 'rl:', skipOnError: true } : {}),
     keyGenerator: (req) => req.ip,
     errorResponseBuilder: (_req, ctx) =>
       new AppError(429, 'RATE_LIMITED', `Muitas tentativas. Aguarde ${Math.ceil(ctx.ttl / 1000)}s e tente de novo.`),
