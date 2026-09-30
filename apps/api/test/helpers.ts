@@ -11,8 +11,9 @@ import { MemoryPushSender } from '../src/services/push';
 export { TEST_DATABASE_URL } from './setup-db';
 import { TEST_DATABASE_URL } from './setup-db';
 
-export function testConfig() {
+export function testConfig(extra: Record<string, string> = {}) {
   return loadConfig({
+    ...extra,
     NODE_ENV: 'test',
     LOG_LEVEL: 'silent',
     DATABASE_URL: TEST_DATABASE_URL,
@@ -30,11 +31,11 @@ export interface TestContext {
   push: MemoryPushSender;
 }
 
-export async function createTestContext(): Promise<TestContext> {
+export async function createTestContext(extraEnv: Record<string, string> = {}): Promise<TestContext> {
   const prisma = new PrismaClient({ datasources: { db: { url: TEST_DATABASE_URL } } });
   const mailer = new MemoryMailer();
   const push = new MemoryPushSender();
-  const app = await buildApp({ config: testConfig(), prisma, overrides: { mailer, push } });
+  const app = await buildApp({ config: testConfig(extraEnv), prisma, overrides: { mailer, push } });
   await app.ready();
   return { app, prisma, mailer, push };
 }

@@ -34,6 +34,12 @@ updates:
       - dependency-name: "react-native*"
       - dependency-name: "@react-native*"
       - dependency-name: "@types/react"
+      # TypeScript 7 é a reescrita nativa do compilador: migração planejada, não automática.
+      - dependency-name: "typescript"
+        update-types: [version-update:semver-major]
+      # Os tipos do Node acompanham a versão do runtime (Node 22, ver .nvmrc).
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
       # Prisma 7+ muda a configuração; migrar de forma planejada.
       - dependency-name: "prisma"
         update-types: [version-update:semver-major]
