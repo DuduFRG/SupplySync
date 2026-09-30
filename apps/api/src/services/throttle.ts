@@ -45,11 +45,44 @@ export class RedisThrottle implements Throttle {
   async hit(key: string, max: number, windowSeconds: number): Promise<boolean> {
     const k = `throttle:${key}`;
     const results = await this.redis.multi().incr(k).expire(k, windowSeconds, 'NX').exec();
-    const count = Number(results?.[0]?.[1] ?? 0);
+    const [err, count] = results?.[0] ?? [new Error('Redis sem resposta'), null];
+    if (err || typeof count !== 'number') throw err ?? new Error('Resposta inesperada do Redis');
     return count <= max;
   }
 
   async reset(key: string): Promise<void> {
     await this.redis.del(`throttle:${key}`);
+  }
+}
+
+/**
+ * Redis como fonte principal, memória local como plano B.
+ * Se o Redis cair, os limites continuam valendo (por instância) em vez de derrubar a API
+ * ou, pior, desligar a proteção contra força bruta.
+ */
+export class ResilientThrottle implements Throttle {
+  private readonly fallback = new MemoryThrottle();
+
+  constructor(
+    private readonly primary: Throttle,
+    private readonly onFallback: (err: unknown) => void,
+  ) {}
+
+  async hit(key: string, max: number, windowSeconds: number): Promise<boolean> {
+    try {
+      return await this.primary.hit(key, max, windowSeconds);
+    } catch (err) {
+      this.onFallback(err);
+      return this.fallback.hit(key, max, windowSeconds);
+    }
+  }
+
+  async reset(key: string): Promise<void> {
+    await this.fallback.reset(key);
+    try {
+      await this.primary.reset(key);
+    } catch (err) {
+      this.onFallback(err);
+    }
   }
 }
