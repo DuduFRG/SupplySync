@@ -1,11 +1,11 @@
 import { useRef } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View, type TextInputInstance } from 'react-native';
 import { colors, fonts, radius, space } from '@/theme';
 import { Text } from './ui';
 
 /** Campo de código de 6 dígitos com caixas visuais e preenchimento automático do SMS/e-mail. */
 export function CodeInput({ value, onChange, error }: { value: string; onChange: (v: string) => void; error?: boolean }) {
-  const ref = useRef<TextInput>(null);
+  const ref = useRef<TextInputInstance>(null);
   const digits = value.padEnd(6, ' ').slice(0, 6).split('');
 
   return (

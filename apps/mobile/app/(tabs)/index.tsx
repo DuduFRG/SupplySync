@@ -10,7 +10,8 @@ import { Banner, Button, Card, EmptyState, IconButton, Screen, SectionTitle, Tex
 import { useHouseContext } from '@/hooks/useHouseContext';
 import { useRefreshOnFocus } from '@/hooks/useRefreshOnFocus';
 import { firstName } from '@/lib/format';
-import { getPushPermission, registerForPush } from '@/lib/notifications';
+import { getPushPermission, pushUnavailableReason, registerForPush } from '@/lib/notifications';
+import { localPrefs } from '@/lib/storage';
 import { colors, palette, radius, space } from '@/theme';
 
 export default function HomeTab() {
@@ -21,9 +22,19 @@ export default function HomeTab() {
   const report = useReportStatus(householdId);
   const [pushAsk, setPushAsk] = useState(false);
 
+  // Só pergunta se os avisos podem funcionar aqui, se ainda não foram ativados
+  // e se a pessoa não respondeu "Agora não" antes.
   useEffect(() => {
-    void getPushPermission().then((granted) => setPushAsk(!granted));
+    if (pushUnavailableReason()) return;
+    void Promise.all([getPushPermission(), localPrefs.isPushPromptDismissed()]).then(([granted, dismissed]) =>
+      setPushAsk(!granted && !dismissed),
+    );
   }, []);
+
+  function dismissPushPrompt() {
+    setPushAsk(false);
+    void localPrefs.dismissPushPrompt();
+  }
 
   const groups = useMemo(() => {
     const list = items.data ?? [];
@@ -100,12 +111,12 @@ export default function HomeTab() {
                 </Text>
               </View>
               <View style={styles.pushActions}>
-                <Button label="Agora não" variant="ghost" size="md" full={false} onPress={() => setPushAsk(false)} />
+                <Button label="Agora não" variant="ghost" size="md" full={false} onPress={dismissPushPrompt} />
                 <Button
                   label="Ativar avisos"
                   size="md"
                   full={false}
-                  onPress={() => void registerForPush().finally(() => setPushAsk(false))}
+                  onPress={() => void registerForPush().finally(dismissPushPrompt)}
                 />
               </View>
             </Card>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Share, StyleSheet, Switch, View } from 'react-native';
+import { Alert, Linking, Share, StyleSheet, Switch, View } from 'react-native';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { FAMILY_PRICE_RANGE_BRL, householdNameSchema, displayNameSchema, type InviteDTO } from '@supplysync/shared';
@@ -9,7 +9,15 @@ import { Avatar, Banner, Button, Card, SectionTitle, Screen, Text, TextField } f
 import { useHouseContext } from '@/hooks/useHouseContext';
 import { useRefreshOnFocus } from '@/hooks/useRefreshOnFocus';
 import { apiErrorToForm } from '@/lib/forms';
-import { getPushPermission, registerForPush, unregisterPushToken } from '@/lib/notifications';
+import {
+  getPushPermission,
+  PUSH_UNAVAILABLE_TEXT,
+  pushUnavailableReason,
+  registerForPush,
+  unregisterPushToken,
+} from '@/lib/notifications';
+
+const pushBlocked = pushUnavailableReason();
 import { colors, palette, radius, space } from '@/theme';
 
 export default function SettingsTab() {
@@ -84,11 +92,30 @@ export default function SettingsTab() {
   }
 
   async function togglePush(next: boolean) {
-    if (next) setPush((await registerForPush()) === 'granted');
-    else {
+    if (next) {
+      const result = await registerForPush();
+      setPush(result === 'granted');
+      if (result === 'denied') {
+        Alert.alert(
+          'Avisos bloqueados',
+          'Você recusou os avisos antes. Para ativar, libere as notificações do SupplySync nos ajustes do celular.',
+          [
+            { text: 'Agora não', style: 'cancel' },
+            { text: 'Abrir ajustes', onPress: () => void Linking.openSettings() },
+          ],
+        );
+      }
+    } else {
       await unregisterPushToken().catch(() => undefined);
       setPush(false);
     }
+  }
+
+  function confirmSignOut() {
+    Alert.alert('Sair da conta', 'Você vai precisar do e-mail e da senha para entrar de novo neste celular.', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Sair', style: 'destructive', onPress: () => void signOut() },
+    ]);
   }
 
   async function confirmDelete() {
@@ -204,11 +231,12 @@ export default function SettingsTab() {
           <View style={styles.flex}>
             <Text variant="bodyStrong">Avisos de itens essenciais</Text>
             <Text variant="caption" color={colors.textSecondary}>
-              Quando algo essencial acabar e quando for sua vez.
+              {pushBlocked ? PUSH_UNAVAILABLE_TEXT[pushBlocked] : 'Quando algo essencial acabar e quando for sua vez.'}
             </Text>
           </View>
           <Switch
             value={push}
+            disabled={!!pushBlocked}
             onValueChange={(v) => void togglePush(v)}
             trackColor={{ true: colors.primary, false: colors.border }}
             accessibilityLabel="Avisos de itens essenciais"
@@ -217,9 +245,28 @@ export default function SettingsTab() {
         <Button label="Rever o combinado da casa" variant="ghost" size="md" icon="book-open" onPress={() => router.push('/onboarding')} />
       </Card>
 
+      {/* Documentos */}
+      <SectionTitle>Documentos</SectionTitle>
+      <Card style={styles.stack}>
+        <Button
+          label="Termos de Uso"
+          variant="ghost"
+          size="md"
+          icon="file-text"
+          onPress={() => router.push({ pathname: '/legal/[doc]', params: { doc: 'termos' } })}
+        />
+        <Button
+          label="Política de Privacidade"
+          variant="ghost"
+          size="md"
+          icon="shield"
+          onPress={() => router.push({ pathname: '/legal/[doc]', params: { doc: 'privacidade' } })}
+        />
+      </Card>
+
       {/* Conta */}
       <SectionTitle>Conta</SectionTitle>
-      <Button label="Sair da conta" variant="secondary" icon="log-out" onPress={() => void signOut()} />
+      <Button label="Sair da conta" variant="secondary" icon="log-out" onPress={confirmSignOut} />
       <Button label="Sair desta casa" variant="danger" icon="home" onPress={confirmLeave} />
 
       {deleting ? (

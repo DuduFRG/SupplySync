@@ -19,51 +19,36 @@ Para casais, famílias e grupos de 3 a 6 moradores que perdem tempo (e paciênci
 
 ## Stack
 
-App **Expo SDK 57 / React Native** (expo-router, TanStack Query, Reanimated) · API **Fastify 5 / Node 22** ·
+App **Expo SDK 58 / React Native** (expo-router, TanStack Query, Reanimated) · API **Fastify 5 / Node 22** ·
 **PostgreSQL + Prisma** · **Zod** compartilhado · monorepo npm workspaces.
 Detalhes em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Rodando localmente
 
-Pré-requisitos: Node 22+, Docker (ou PostgreSQL 16 local) e o app Expo Go ou um emulador.
+**Primeira vez? Siga o guia passo a passo: [docs/PRIMEIROS-PASSOS.md](docs/PRIMEIROS-PASSOS.md).**
+
+Pré-requisitos: Node.js 22.12+ (LTS) e o app Expo Go no celular. Não precisa de Docker.
 
 ```bash
 npm install
-
-# Banco e Redis de desenvolvimento
-docker compose up -d
-
-# API
-cp apps/api/.env.example apps/api/.env
-# preencha JWT_ACCESS_SECRET, TOKEN_HASH_SECRET e PASSWORD_PEPPER com valores gerados por:
-node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
-npm run db:migrate            # cria as tabelas
-npm run dev:api               # http://127.0.0.1:3333
-
-# App (em outro terminal)
-cp apps/mobile/.env.example apps/mobile/.env
-# em aparelho físico, use o IP da sua máquina em EXPO_PUBLIC_API_URL e HOST=0.0.0.0 na API
-npm run dev:mobile
+npm run dev        # na primeira vez também prepara tudo (o mesmo que npm run setup)
 ```
 
-Em desenvolvimento os e-mails não são enviados: o código de confirmação aparece no log da API.
+O `npm run dev` liga, nesta ordem: um PostgreSQL embutido (dados em `.data/postgres`), a API em modo de
+desenvolvimento e o Expo, que mostra o QR Code. Ctrl + C desliga tudo.
 
-### No seu celular (Expo Go)
-
-1. Instale o **Expo Go** (App Store ou Google Play). Computador e celular na **mesma rede Wi-Fi**.
-2. Descubra o IP local do computador (`ipconfig` no Windows, `ipconfig getifaddr en0` no macOS).
-3. Em `apps/api/.env`, use `HOST=0.0.0.0`. Em `apps/mobile/.env`, use `EXPO_PUBLIC_API_URL=http://SEU_IP:3333`.
-4. Reinicie a API (`npm run dev:api`) e rode `npm run dev:mobile`.
-5. Escaneie o QR Code: no iPhone pela câmera, no Android pelo próprio Expo Go.
-
-Se a rede bloquear a conexão (Wi-Fi corporativo, por exemplo), use `npx expo start --tunnel` dentro de `apps/mobile`.
-Notificações push não funcionam no Expo Go: para testá-las, gere um development build com `eas build --profile development`.
+- Os arquivos `.env` são criados pelo `npm run setup` com segredos aleatórios. Nunca vão para o Git.
+- O app descobre sozinho o endereço do computador na rede (mesmo Wi-Fi). Para apontar para outra API,
+  defina `EXPO_PUBLIC_API_URL` em `apps/mobile/.env`.
+- Os e-mails não são enviados em desenvolvimento: o código de confirmação aparece em destaque no terminal.
+- Avisos push não funcionam no Expo Go; para testá-los, gere um development build com `eas build --profile development`.
+- Prefere Docker? `docker compose up -d` continua disponível; ajuste `DATABASE_URL` em `apps/api/.env`.
 
 ## Qualidade
 
 ```bash
 npm run typecheck             # shared, api e mobile
-npm test                      # 15 testes de domínio + 21 testes de integração da API
+npm test                      # testes de domínio e de integração da API
 ```
 
 Os testes de integração usam um PostgreSQL real. Defina `TEST_DATABASE_URL` apontando para um banco descartável

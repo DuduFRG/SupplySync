@@ -25,7 +25,7 @@
 
 | Decisão | Motivo |
 | --- | --- |
-| **Expo + React Native (SDK 57)** | Um código para iOS e Android, builds e envio às lojas via EAS, atualização de dependências nativas coordenada. |
+| **Expo + React Native (SDK 58)** | Um código para iOS e Android, builds e envio às lojas via EAS, atualização de dependências nativas coordenada. |
 | **expo-router** | Rotas por arquivo, deep links (notificações abrem o item certo) e rotas tipadas em tempo de compilação. |
 | **TanStack Query** | Cache, sincronização e atualização otimista. Sinalizar "Acabou" responde na hora, mesmo com rede lenta. |
 | **Fastify** | Rápido, com plugins oficiais maduros para helmet, CORS, JWT, multipart e rate limit. |

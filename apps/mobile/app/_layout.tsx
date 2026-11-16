@@ -3,13 +3,14 @@ import { AppState, Platform, StyleSheet } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import * as Notifications from 'expo-notifications';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, useFonts } from '@expo-google-fonts/inter';
 import { ApiError } from '@/api/client';
 import { SessionProvider, useSession } from '@/auth/AuthProvider';
+import { OfflineBanner } from '@/components/OfflineBanner';
+import { onNotificationTap } from '@/lib/notifications';
 import { colors } from '@/theme';
 
 void SplashScreen.preventAutoHideAsync();
@@ -42,19 +43,12 @@ function RootNavigator() {
   }, [ready]);
 
   // Toque em uma notificação de item abre o item.
-  useEffect(() => {
-    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data as { itemId?: unknown };
-      if (typeof data.itemId === 'string' && /^[0-9a-f-]{36}$/i.test(data.itemId)) {
-        router.push({ pathname: '/item/[id]', params: { id: data.itemId } });
-      }
-    });
-    return () => sub.remove();
-  }, []);
+  useEffect(() => onNotificationTap((id) => router.push({ pathname: '/item/[id]', params: { id } })), []);
 
   if (!ready) return null;
 
   return (
+    <>
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background }, animation: 'slide_from_right' }}>
       <Stack.Screen name="onboarding" options={{ animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
@@ -63,7 +57,10 @@ function RootNavigator() {
       <Stack.Screen name="item/[id]" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       <Stack.Screen name="item/form" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       <Stack.Screen name="purchase/new" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="legal/[doc]" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
     </Stack>
+    <OfflineBanner />
+    </>
   );
 }
 

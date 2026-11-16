@@ -2,6 +2,7 @@
   "name": "@supplysync/shared",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Schemas de validação, regras de domínio e constantes compartilhadas entre API e app.",
   "main": "src/index.ts",
   "types": "src/index.ts",

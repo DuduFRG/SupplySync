@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const KEYS = {
   onboarding: 'ss.onboarding.v1',
   activeHousehold: 'ss.activeHousehold',
+  pushPromptDismissed: 'ss.pushPromptDismissed',
 } as const;
 
 export interface OnboardingAnswers {
@@ -30,4 +31,13 @@ export const localPrefs = {
   getActiveHousehold: () => AsyncStorage.getItem(KEYS.activeHousehold),
   setActiveHousehold: (id: string) => AsyncStorage.setItem(KEYS.activeHousehold, id),
   clearActiveHousehold: () => AsyncStorage.removeItem(KEYS.activeHousehold),
+  /** A pessoa respondeu "Agora não" ao pedido de avisos: não perguntamos de novo na tela inicial. */
+  async isPushPromptDismissed(): Promise<boolean> {
+    try {
+      return (await AsyncStorage.getItem(KEYS.pushPromptDismissed)) === '1';
+    } catch {
+      return false;
+    }
+  },
+  dismissPushPrompt: () => AsyncStorage.setItem(KEYS.pushPromptDismissed, '1'),
 };
