@@ -5,9 +5,10 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  * lido por qualquer pessoa: segredos vivem somente na API.
  */
 const IS_PROD = process.env.APP_VARIANT === 'production';
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3333';
+// Vazio em desenvolvimento: o app descobre sozinho o endereço do computador (ver src/api/client.ts).
+const API_URL = process.env.EXPO_PUBLIC_API_URL?.trim() || null;
 
-if (IS_PROD && !API_URL.startsWith('https://')) {
+if (IS_PROD && !API_URL?.startsWith('https://')) {
   throw new Error('EXPO_PUBLIC_API_URL precisa ser https em builds de produção');
 }
 
@@ -60,8 +61,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   experiments: { typedRoutes: true },
   extra: {
     apiUrl: API_URL,
-    turnstileSiteKey: process.env.EXPO_PUBLIC_TURNSTILE_SITE_KEY ?? null,
-    turnstileBaseUrl: process.env.EXPO_PUBLIC_TURNSTILE_BASE_URL ?? null,
+    turnstileSiteKey: process.env.EXPO_PUBLIC_TURNSTILE_SITE_KEY?.trim() || null,
+    turnstileBaseUrl: process.env.EXPO_PUBLIC_TURNSTILE_BASE_URL?.trim() || null,
     eas: { projectId: process.env.EAS_PROJECT_ID },
   },
 });

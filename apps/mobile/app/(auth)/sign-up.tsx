@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { StyleSheet, View, type TextInput } from 'react-native';
+import { StyleSheet, View, type TextInputInstance } from 'react-native';
 import { Link, router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { registerSchema } from '@supplysync/shared';
@@ -21,8 +21,8 @@ function PasswordRule({ ok, label }: { ok: boolean; label: string }) {
 }
 
 export default function SignUp() {
-  const emailRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInputInstance>(null);
+  const passwordRef = useRef<TextInputInstance>(null);
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -108,7 +108,27 @@ export default function SignUp() {
       </View>
       <HumanCheck onToken={onToken} resetKey={captchaKey} />
       <Text variant="caption" color={colors.textSecondary}>
-        Ao criar a conta você concorda com os Termos de Uso e a Política de Privacidade. Seus dados são usados apenas para o funcionamento da sua casa no app.
+        Ao criar a conta, você confirma ter 18 anos ou mais e concorda com os{' '}
+        <Text
+          variant="caption"
+          color={colors.primary}
+          style={styles.link}
+          accessibilityRole="link"
+          onPress={() => router.push({ pathname: '/legal/[doc]', params: { doc: 'termos' } })}
+        >
+          Termos de Uso
+        </Text>{' '}
+        e a{' '}
+        <Text
+          variant="caption"
+          color={colors.primary}
+          style={styles.link}
+          accessibilityRole="link"
+          onPress={() => router.push({ pathname: '/legal/[doc]', params: { doc: 'privacidade' } })}
+        >
+          Política de Privacidade
+        </Text>
+        .
       </Text>
     </Screen>
   );
@@ -117,4 +137,5 @@ export default function SignUp() {
 const styles = StyleSheet.create({
   rules: { gap: space.xs, marginTop: -space.sm },
   rule: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  link: { textDecorationLine: 'underline' },
 });

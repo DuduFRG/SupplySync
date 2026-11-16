@@ -3,7 +3,27 @@ import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import type { ApiErrorBody, AuthTokens } from '@supplysync/shared';
 
-export const API_URL: string = (Constants.expoConfig?.extra?.apiUrl as string | undefined) ?? 'http://localhost:3333';
+const API_PORT = 3333;
+
+/**
+ * Endereço da API.
+ * 1. Se EXPO_PUBLIC_API_URL estiver definido (produção, sempre https), usa ele.
+ * 2. Em desenvolvimento, usa o mesmo computador de onde o Expo Go baixou o app:
+ *    o Expo informa esse endereço (ex.: 192.168.0.15:8081) e só trocamos a porta.
+ * 3. Último recurso: localhost (simulador no próprio computador, ou navegador).
+ */
+function resolveApiUrl(): string {
+  const configured = Constants.expoConfig?.extra?.apiUrl;
+  if (typeof configured === 'string' && configured) return configured.replace(/\/+$/, '');
+
+  const devHost = Constants.expoConfig?.hostUri?.split(':')[0];
+  if (__DEV__ && devHost && /^[\w.-]+$/.test(devHost) && !devHost.endsWith('.exp.direct')) {
+    return `http://${devHost}:${API_PORT}`;
+  }
+  return `http://localhost:${API_PORT}`;
+}
+
+export const API_URL = resolveApiUrl();
 
 const REFRESH_KEY = 'ss.refreshToken';
 const TIMEOUT_MS = 15_000;
@@ -101,7 +121,13 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch {
-    throw new ApiError(0, 'NETWORK', 'Sem conexão com o servidor. Verifique sua internet.');
+    throw new ApiError(
+      0,
+      'NETWORK',
+      __DEV__
+        ? `Não foi possível falar com a API em ${API_URL}. Confira se o "npm run dev" está rodando e se o celular está no mesmo Wi-Fi.`
+        : 'Sem conexão com o servidor. Verifique sua internet.',
+    );
   }
 
   if (response.status === 401 && auth && retryOnUnauthorized) {

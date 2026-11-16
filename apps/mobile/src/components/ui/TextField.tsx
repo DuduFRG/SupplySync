@@ -1,5 +1,5 @@
 import { forwardRef, useState } from 'react';
-import { Platform, Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
+import { Platform, Pressable, StyleSheet, TextInput, View, type TextInputInstance, type TextInputProps } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { colors, fonts, radius, space } from '@/theme';
 import { Text } from './Text';
@@ -12,7 +12,7 @@ export interface TextFieldProps extends Omit<TextInputProps, 'style'> {
   prefix?: string;
 }
 
-export const TextField = forwardRef<TextInput, TextFieldProps>(function TextField(
+export const TextField = forwardRef<TextInputInstance, TextFieldProps>(function TextField(
   { label, error, hint, secureToggle, prefix, secureTextEntry, onFocus, onBlur, ...rest },
   ref,
 ) {

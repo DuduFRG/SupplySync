@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { StyleSheet, View, type TextInput } from 'react-native';
+import { StyleSheet, View, type TextInputInstance } from 'react-native';
 import { Link, router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { loginSchema } from '@supplysync/shared';
@@ -13,7 +13,7 @@ import { colors, space } from '@/theme';
 
 export default function SignIn() {
   const { signIn } = useSession();
-  const passwordRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInputInstance>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [captchaToken, setCaptchaToken] = useState<string | undefined>();
