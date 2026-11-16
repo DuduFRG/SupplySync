@@ -15,12 +15,18 @@ export interface AuthTokens {
   accessToken: string;
   accessTokenExpiresIn: number;
   refreshToken: string;
+  /** true quando a conta acabou de ser criada (login social). */
+  isNewUser?: boolean;
 }
 
 export interface UserDTO {
   id: string;
   email: string;
   displayName: string;
+  /** false para contas criadas só com Google/Apple (sem senha). */
+  hasPassword: boolean;
+  /** Logins sociais ligados à conta. */
+  providers: ('google' | 'apple')[];
 }
 
 export interface HouseholdSummaryDTO {

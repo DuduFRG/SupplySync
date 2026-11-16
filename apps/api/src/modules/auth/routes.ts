@@ -7,12 +7,15 @@ import {
   loginSchema,
   refreshSchema,
   registerSchema,
+  displayNameSchema,
   resetPasswordSchema,
+  socialLoginSchema,
   verifyEmailSchema,
 } from '@supplysync/shared';
 import { keyedHash, randomNumericCode, safeEqual } from '../../lib/crypto';
 import { AppError, Errors } from '../../lib/errors';
 import { parse } from '../../lib/validate';
+import { NO_PASSWORD } from '../../lib/password';
 import { MailTemplates } from '../../services/mailer';
 
 /** Mesma resposta para e-mail existente ou não: impede enumeração de usuários. */
@@ -24,7 +27,7 @@ const TOO_MANY = () => new AppError(429, 'RATE_LIMITED', 'Muitas tentativas. Agu
 const limit = (max: number, timeWindow: string) => ({ config: { rateLimit: { max, timeWindow } } });
 
 export async function authRoutes(app: FastifyInstance) {
-  const { prisma, passwords, sessions, captcha, mailer, throttle, config } = app.services;
+  const { prisma, passwords, sessions, captcha, mailer, throttle, config, social } = app.services;
 
   const codeHash = (purpose: CodePurpose, userId: string, code: string) =>
     keyedHash(config.TOKEN_HASH_SECRET, `${purpose}:${userId}:${code}`);
@@ -107,6 +110,8 @@ export async function authRoutes(app: FastifyInstance) {
     if (!(await consumeCode(prisma, user.id, 'VERIFY_EMAIL', body.code))) throw INVALID_CODE();
 
     const verified = await prisma.user.update({ where: { id: user.id }, data: { emailVerifiedAt: new Date() } });
+    // Conta confirmada: e-mail de boas-vindas (sem atrasar a resposta).
+    void mailer.send({ to: verified.email, ...MailTemplates.welcome(verified.displayName) });
     return sessions.issue(verified);
   });
 
@@ -149,6 +154,67 @@ export async function authRoutes(app: FastifyInstance) {
 
     await throttle.reset(throttleKey);
     return sessions.issue(user);
+  });
+
+  // -------------------------------------------------------------------------
+  /**
+   * Entrar ou criar conta com Google/Apple.
+   * 1. Já existe conta ligada a esse login: entra.
+   * 2. Existe conta com o mesmo e-mail, confirmado pelo provedor: liga o login a ela.
+   *    Se essa conta nunca confirmou o e-mail (pode ter sido criada por outra pessoa),
+   *    a senha dela é invalidada: quem prova ser dono do e-mail fica com a conta.
+   * 3. Não existe: cria a conta já confirmada e envia o e-mail de boas-vindas.
+   */
+  app.post('/social', limit(30, '15 minutes'), async (request) => {
+    const body = parse(socialLoginSchema, request.body);
+    const identity = await social.verify(body.provider, body.idToken, body.nonce);
+
+    const linked = await prisma.userIdentity.findUnique({
+      where: { provider_subject: { provider: identity.provider, subject: identity.subject } },
+      include: { user: true },
+    });
+    if (linked) {
+      if (linked.user.deletedAt) throw INVALID_CREDENTIALS();
+      return sessions.issue(linked.user);
+    }
+
+    if (!identity.email || !identity.emailVerified) {
+      throw new AppError(400, 'SOCIAL_EMAIL_REQUIRED', 'Precisamos de um e-mail confirmado. Use outra forma de entrar.');
+    }
+
+    const existing = await prisma.user.findUnique({ where: { email: identity.email } });
+    if (existing && !existing.deletedAt) {
+      const user = await prisma.$transaction(async (tx) => {
+        await tx.userIdentity.create({
+          data: { userId: existing.id, provider: identity.provider, subject: identity.subject, email: identity.email },
+        });
+        if (existing.emailVerifiedAt) return existing;
+        return tx.user.update({
+          where: { id: existing.id },
+          data: { emailVerifiedAt: new Date(), passwordHash: NO_PASSWORD, tokenVersion: { increment: 1 } },
+        });
+      });
+      return sessions.issue(user);
+    }
+
+    const name =
+      body.displayName ??
+      [identity.name, identity.email.split('@')[0]]
+        .map((candidate) => displayNameSchema.safeParse(candidate ?? ''))
+        .find((r) => r.success)?.data ??
+      'Morador';
+
+    const user = await prisma.user.create({
+      data: {
+        email: identity.email,
+        passwordHash: NO_PASSWORD,
+        displayName: name,
+        emailVerifiedAt: new Date(),
+        identities: { create: { provider: identity.provider, subject: identity.subject, email: identity.email } },
+      },
+    });
+    void mailer.send({ to: user.email, ...MailTemplates.welcome(user.displayName) });
+    return { ...(await sessions.issue(user)), isNewUser: true };
   });
 
   // -------------------------------------------------------------------------

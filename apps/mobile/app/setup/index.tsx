@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { createHouseholdSchema, joinHouseholdSchema } from '@supplysync/shared';
+import { createHouseholdSchema, joinHouseholdSchema, PLAN_LIMITS } from '@supplysync/shared';
 import { useCreateHousehold, useJoinHousehold, useMe } from '@/api/hooks';
 import { Banner, Button, Card, PressableScale, Screen, Text, TextField } from '@/components/ui';
 import { apiErrorToForm, validate, type FieldErrors } from '@/lib/forms';
@@ -112,7 +112,7 @@ export default function Setup() {
       />
       <Card style={styles.note}>
         <Text variant="label" color={colors.textSecondary}>
-          No plano gratuito você participa de 1 casa com até 4 moradores e 20 itens. Dá para começar sem cartão.
+          No plano gratuito você participa de 1 casa com até {PLAN_LIMITS.FREE.maxMembers} moradores e {PLAN_LIMITS.FREE.maxItems} itens. Quem você convidar entra na hora, sem configurar nada.
         </Text>
       </Card>
     </Screen>

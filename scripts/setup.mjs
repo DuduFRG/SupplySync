@@ -52,9 +52,17 @@ CORS_ORIGINS=
 REDIS_URL=
 CAPTCHA_PROVIDER=none
 TURNSTILE_SECRET_KEY=
+# Para enviar e-mails de verdade (grátis), veja docs/EMAIL-E-LOGIN-SOCIAL.md
 MAIL_PROVIDER=console
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
 RESEND_API_KEY=
 MAIL_FROM="SupplySync <no-reply@supplysync.app>"
+# Login com Apple funciona no Expo Go do iPhone (host.exp.Exponent é só para testes).
+APPLE_CLIENT_IDS=app.supplysync.mobile,host.exp.Exponent
+GOOGLE_CLIENT_IDS=
 STORAGE_DIR=./storage
 EXPO_ACCESS_TOKEN=
 `,
@@ -72,6 +80,8 @@ function writeMobileEnv() {
 EXPO_PUBLIC_API_URL=
 EXPO_PUBLIC_TURNSTILE_SITE_KEY=
 EXPO_PUBLIC_TURNSTILE_BASE_URL=
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=
 `,
   );
   ok('Configuração do app criada');

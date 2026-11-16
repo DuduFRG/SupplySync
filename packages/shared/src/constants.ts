@@ -28,8 +28,10 @@ export interface PlanLimits {
 }
 
 export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
-  FREE: { maxMembers: 4, maxItems: 20, historyDays: 60, maxHouseholdsPerUser: 1 },
-  FAMILY: { maxMembers: 8, maxItems: 300, historyDays: 3650, maxHouseholdsPerUser: 3 },
+  // A casa cresce conforme as pessoas aceitam o convite; o limite só existe contra abuso
+  // e para diferenciar os planos. 6 cobre o público principal (casais, famílias, até 6 roommates).
+  FREE: { maxMembers: 6, maxItems: 20, historyDays: 60, maxHouseholdsPerUser: 1 },
+  FAMILY: { maxMembers: 12, maxItems: 300, historyDays: 3650, maxHouseholdsPerUser: 3 },
 };
 
 /** Faixa de preço de referência da assinatura familiar (exibição). */

@@ -1,6 +1,6 @@
 # Termos de Uso
 
-_Versão de 16 de novembro de 2026_
+_Versão de 17 de novembro de 2026_
 
 Estes Termos explicam as regras para usar o SupplySync, oferecido por [NOME COMPLETO OU RAZÃO SOCIAL] ([CPF OU CNPJ]). Ao criar uma conta, você declara que leu e concorda com eles.
 
@@ -13,7 +13,7 @@ O app apenas registra e calcula valores. Ele não movimenta dinheiro, não faz c
 
 ## 2. Quem pode usar
 
-O SupplySync é destinado a maiores de 18 anos. Ao criar uma conta, você confirma ter 18 anos ou mais.
+O SupplySync é destinado a maiores de 18 anos. Ao criar uma conta, inclusive com Google ou Apple, você confirma ter 18 anos ou mais.
 
 Você é responsável por manter sua senha em segredo e por tudo o que for feito com a sua conta. Se suspeitar de uso indevido, troque a senha e fale com a gente.
 

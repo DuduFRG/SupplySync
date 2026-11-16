@@ -7,6 +7,7 @@ import { authApi } from '@/api/hooks';
 import { ApiError } from '@/api/client';
 import { useSession } from '@/auth/AuthProvider';
 import { HumanCheck, humanCheckEnabled } from '@/components/HumanCheck';
+import { SocialButtons } from '@/components/SocialButtons';
 import { Banner, Button, Screen, Text, TextField } from '@/components/ui';
 import { apiErrorToForm, validate, type FieldErrors } from '@/lib/forms';
 import { colors, space } from '@/theme';
@@ -66,6 +67,8 @@ export default function SignIn() {
         </Text>
         <Text color={colors.textSecondary}>Entre para ver o que está acabando na sua casa.</Text>
       </View>
+
+      <SocialButtons mode="sign-in" />
 
       {message ? <Banner>{message}</Banner> : null}
 

@@ -31,11 +31,14 @@ export interface TestContext {
   push: MemoryPushSender;
 }
 
-export async function createTestContext(extraEnv: Record<string, string> = {}): Promise<TestContext> {
+export async function createTestContext(
+  extraEnv: Record<string, string> = {},
+  extraOverrides: NonNullable<Parameters<typeof buildApp>[0]['overrides']> = {},
+): Promise<TestContext> {
   const prisma = new PrismaClient({ datasources: { db: { url: TEST_DATABASE_URL } } });
   const mailer = new MemoryMailer();
   const push = new MemoryPushSender();
-  const app = await buildApp({ config: testConfig(extraEnv), prisma, overrides: { mailer, push } });
+  const app = await buildApp({ config: testConfig(extraEnv), prisma, overrides: { mailer, push, ...extraOverrides } });
   await app.ready();
   return { app, prisma, mailer, push };
 }
