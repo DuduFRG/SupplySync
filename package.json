@@ -11,11 +11,17 @@
     "node": ">=22.12"
   },
   "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "node scripts/dev.mjs",
     "dev:api": "npm run dev -w @supplysync/api",
     "dev:mobile": "npm run start -w @supplysync/mobile",
     "db:migrate": "npm run db:migrate -w @supplysync/api",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "audit": "npm audit --omit=dev"
+    "audit": "npm audit --omit=dev",
+    "legal:export": "tsx scripts/export-legal.ts"
+  },
+  "devDependencies": {
+    "embedded-postgres": "^17.11.0-beta.19"
   }
 }

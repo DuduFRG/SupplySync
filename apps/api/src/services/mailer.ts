@@ -34,12 +34,22 @@ class ResendMailer implements Mailer {
   }
 }
 
-/** Desenvolvimento: imprime o e-mail no log local. Bloqueado em produção pela configuração. */
+/**
+ * Desenvolvimento: em vez de enviar o e-mail, mostra no terminal de forma bem visível,
+ * para você copiar o código de confirmação. Bloqueado em produção pela configuração.
+ */
 class ConsoleMailer implements Mailer {
   constructor(private readonly log: FastifyBaseLogger) {}
 
   async send(message: MailMessage): Promise<void> {
-    this.log.info({ mail: message }, 'mail (dev): mensagem não enviada, exibida no log');
+    this.log.debug({ mail: message }, 'mail (dev): mensagem não enviada');
+    const code = /\b(\d{6})\b/.exec(message.subject)?.[1];
+    const line = '─'.repeat(52);
+    process.stdout.write(
+      `\n  ${line}\n  E-MAIL (não enviado, modo de teste)\n  Para: ${message.to}\n  ${message.subject}\n` +
+        (code ? `\n  >>> CÓDIGO: ${code} <<<\n` : '') +
+        `  ${line}\n\n`,
+    );
   }
 }
 
