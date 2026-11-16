@@ -14,6 +14,7 @@ import { createCaptchaVerifier, type CaptchaVerifier } from './services/captcha'
 import { createMailer, type Mailer } from './services/mailer';
 import { createPushSender, type PushSender } from './services/push';
 import { ACCESS_TOKEN_TTL_SECONDS, SessionService } from './services/sessions';
+import { SocialVerifier } from './services/social';
 import { LocalPhotoStorage, type PhotoStorage } from './services/storage';
 import { MemoryThrottle, RedisThrottle, ResilientThrottle, type Throttle } from './services/throttle';
 import { authRoutes } from './modules/auth/routes';
@@ -33,6 +34,7 @@ export interface Services {
   push: PushSender;
   storage: PhotoStorage;
   throttle: Throttle;
+  social: SocialVerifier;
 }
 
 declare module 'fastify' {
@@ -117,6 +119,7 @@ export async function buildApp({ config, prisma: injectedPrisma, overrides = {} 
     mailer: overrides.mailer ?? createMailer(config, app.log),
     push: overrides.push ?? createPushSender(config, prisma, app.log),
     storage: overrides.storage ?? new LocalPhotoStorage(config.STORAGE_DIR),
+    social: overrides.social ?? new SocialVerifier(config),
     throttle:
       overrides.throttle ??
       (redis

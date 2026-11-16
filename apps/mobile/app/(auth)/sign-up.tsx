@@ -5,6 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { registerSchema } from '@supplysync/shared';
 import { authApi } from '@/api/hooks';
 import { HumanCheck, humanCheckEnabled } from '@/components/HumanCheck';
+import { SocialButtons } from '@/components/SocialButtons';
 import { Banner, Button, Screen, Text, TextField } from '@/components/ui';
 import { apiErrorToForm, validate, type FieldErrors } from '@/lib/forms';
 import { colors, space } from '@/theme';
@@ -65,6 +66,7 @@ export default function SignUp() {
         </>
       }
     >
+      <SocialButtons mode="sign-up" />
       {message ? <Banner>{message}</Banner> : null}
       <TextField
         label="Como a casa te chama?"

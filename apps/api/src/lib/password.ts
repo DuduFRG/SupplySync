@@ -12,6 +12,9 @@ const OPTIONS = {
   parallelism: 1,
 } as const;
 
+/** Marca de conta sem senha (só Google/Apple, ou excluída). Nunca corresponde a nenhuma senha. */
+export const NO_PASSWORD = '!';
+
 export class PasswordHasher {
   private readonly secret: Buffer;
   private dummyHash: Promise<string> | null = null;

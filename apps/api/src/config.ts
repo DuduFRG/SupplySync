@@ -15,6 +15,17 @@ const optionalString = z
   .optional()
   .transform((v) => (v && v.trim() !== '' ? v.trim() : undefined));
 
+const csvList = z
+  .string()
+  .optional()
+  .transform((v) =>
+    (v ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+  )
+  .pipe(z.array(z.string().regex(/^[\w.-]{3,200}$/, 'Valor inválido na lista')));
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -54,9 +65,20 @@ const envSchema = z
     CAPTCHA_PROVIDER: z.enum(['turnstile', 'none']).default('none'),
     TURNSTILE_SECRET_KEY: optionalString,
 
-    MAIL_PROVIDER: z.enum(['console', 'resend']).default('console'),
+    // smtp: gratuito com Gmail (senha de app, ~500 e-mails/dia) ou Brevo (300/dia), sem domínio próprio.
+    MAIL_PROVIDER: z.enum(['console', 'smtp', 'resend']).default('console'),
     RESEND_API_KEY: optionalString,
+    SMTP_HOST: optionalString,
+    SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
+    SMTP_USER: optionalString,
+    SMTP_PASS: optionalString,
     MAIL_FROM: z.string().default('SupplySync <no-reply@supplysync.app>'),
+
+    // Login social. Listas separadas por vírgula; vazio desliga o provedor.
+    // Google: IDs de cliente OAuth (Web, iOS e Android) do Google Cloud.
+    GOOGLE_CLIENT_IDS: csvList,
+    // Apple: bundle ID do app. "host.exp.Exponent" (Expo Go) só é aceito fora de produção.
+    APPLE_CLIENT_IDS: csvList,
 
     STORAGE_DIR: z.string().default('./storage'),
     EXPO_ACCESS_TOKEN: optionalString,
@@ -69,12 +91,20 @@ const envSchema = z
     if (env.CAPTCHA_PROVIDER === 'turnstile' && !env.TURNSTILE_SECRET_KEY) {
       ctx.addIssue({ code: 'custom', message: 'TURNSTILE_SECRET_KEY é obrigatório', path: ['TURNSTILE_SECRET_KEY'] });
     }
+    if (env.MAIL_PROVIDER === 'smtp' && !(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS)) {
+      ctx.addIssue({ code: 'custom', message: 'SMTP_HOST, SMTP_USER e SMTP_PASS são obrigatórios', path: ['SMTP_HOST'] });
+    }
     if (env.MAIL_PROVIDER === 'resend' && !env.RESEND_API_KEY) {
       ctx.addIssue({ code: 'custom', message: 'RESEND_API_KEY é obrigatório', path: ['RESEND_API_KEY'] });
     }
     if (env.NODE_ENV === 'production') {
       if (env.CAPTCHA_PROVIDER === 'none') {
         ctx.addIssue({ code: 'custom', message: 'Antibot é obrigatório em produção', path: ['CAPTCHA_PROVIDER'] });
+      }
+      if (env.APPLE_CLIENT_IDS.includes('host.exp.Exponent')) {
+        // Qualquer projeto no Expo Go recebe tokens com esse destinatário: aceitar em produção
+        // permitiria reaproveitar um login da Apple feito em outro app.
+        ctx.addIssue({ code: 'custom', message: 'host.exp.Exponent não é permitido em produção', path: ['APPLE_CLIENT_IDS'] });
       }
       if (env.MAIL_PROVIDER === 'console') {
         ctx.addIssue({ code: 'custom', message: 'E-mail real é obrigatório em produção', path: ['MAIL_PROVIDER'] });

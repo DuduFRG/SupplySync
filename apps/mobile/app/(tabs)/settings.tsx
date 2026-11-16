@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { Alert, Linking, Share, StyleSheet, Switch, View } from 'react-native';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { FAMILY_PRICE_RANGE_BRL, householdNameSchema, displayNameSchema, type InviteDTO } from '@supplysync/shared';
+import { FAMILY_PRICE_RANGE_BRL, householdNameSchema, PLAN_LIMITS, displayNameSchema, type InviteDTO } from '@supplysync/shared';
 import { useCreateInvite, useDeleteAccount, useLeaveHousehold, useRemoveMember, useRenameHousehold, useUpdateMe } from '@/api/hooks';
 import { useSession } from '@/auth/AuthProvider';
+import { googleAvailable, signInWith, SocialCancelled } from '@/auth/social';
 import { Avatar, Banner, Button, Card, SectionTitle, Screen, Text, TextField } from '@/components/ui';
 import { useHouseContext } from '@/hooks/useHouseContext';
 import { useRefreshOnFocus } from '@/hooks/useRefreshOnFocus';
@@ -118,9 +119,25 @@ export default function SettingsTab() {
     ]);
   }
 
+  const hasPassword = me.data?.user.hasPassword ?? true;
+  // Sem senha: a pessoa confirma entrando de novo pelo mesmo provedor (Apple primeiro no iPhone).
+  const confirmProvider = (me.data?.user.providers ?? []).find((p) => p === 'apple' || (p === 'google' && googleAvailable)) ?? null;
+
   async function confirmDelete() {
     await run(async () => {
-      await deleteAccount.mutateAsync(password);
+      if (hasPassword) {
+        await deleteAccount.mutateAsync({ password });
+      } else {
+        if (!confirmProvider) throw new Error('Abra o app no aparelho onde você entrou com Google/Apple para excluir a conta.');
+        let credential;
+        try {
+          credential = await signInWith(confirmProvider);
+        } catch (err) {
+          if (err instanceof SocialCancelled) return;
+          throw err;
+        }
+        await deleteAccount.mutateAsync({ provider: credential.provider, idToken: credential.idToken, nonce: credential.nonce });
+      }
       await signOut({ remote: false });
       router.replace('/');
     });
@@ -219,7 +236,7 @@ export default function SettingsTab() {
         </View>
         {h?.plan !== 'FAMILY' ? (
           <Text variant="label" color={colors.textSecondary}>
-            O plano Família libera até 8 moradores, 300 itens e histórico completo, por R$ {FAMILY_PRICE_RANGE_BRL.min} a R$ {FAMILY_PRICE_RANGE_BRL.max} por mês. Em breve nas lojas.
+            O plano Família libera até {PLAN_LIMITS.FAMILY.maxMembers} moradores, {PLAN_LIMITS.FAMILY.maxItems} itens e histórico completo, por R$ {FAMILY_PRICE_RANGE_BRL.min} a R$ {FAMILY_PRICE_RANGE_BRL.max} por mês. Em breve nas lojas.
           </Text>
         ) : null}
       </Card>
@@ -280,8 +297,20 @@ export default function SettingsTab() {
           <Text variant="caption" color={colors.textSecondary}>
             Seus dados pessoais são apagados. Compras já registradas continuam nas contas da casa, como “Ex-morador”, para não prejudicar quem fica.
           </Text>
-          <TextField label="Confirme sua senha" value={password} onChangeText={setPassword} secureTextEntry secureToggle autoComplete="current-password" />
-          <Button label="Excluir minha conta" variant="danger" loading={deleteAccount.isPending} disabled={!password} onPress={() => void confirmDelete()} />
+          {hasPassword ? (
+            <>
+              <TextField label="Confirme sua senha" value={password} onChangeText={setPassword} secureTextEntry secureToggle autoComplete="current-password" />
+              <Button label="Excluir minha conta" variant="danger" loading={deleteAccount.isPending} disabled={!password} onPress={() => void confirmDelete()} />
+            </>
+          ) : (
+            <Button
+              label={confirmProvider === 'apple' ? 'Confirmar com Apple e excluir' : 'Confirmar com Google e excluir'}
+              variant="danger"
+              loading={deleteAccount.isPending}
+              disabled={!confirmProvider}
+              onPress={() => void confirmDelete()}
+            />
+          )}
           <Button label="Cancelar" variant="ghost" onPress={() => setDeleting(false)} />
         </Card>
       ) : (

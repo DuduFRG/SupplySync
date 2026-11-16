@@ -122,9 +122,31 @@ export const updateMeSchema = z.strictObject({
   displayName: displayNameSchema,
 });
 
-export const deleteMeSchema = z.strictObject({
-  password: loginPasswordSchema,
+export const SOCIAL_PROVIDERS = ['google', 'apple'] as const;
+export type SocialProvider = (typeof SOCIAL_PROVIDERS)[number];
+
+/** Token de identidade (JWT) emitido pelo Google ou pela Apple, conferido pela API. */
+const idTokenSchema = z
+  .string({ message: 'Login inválido' })
+  .max(8192)
+  .regex(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/, 'Login inválido');
+
+/** Valor aleatório gerado no aparelho para impedir reaproveitamento do token (Apple). */
+const nonceSchema = z.string().regex(/^[A-Za-z0-9_-]{16,128}$/, 'Login inválido');
+
+export const socialLoginSchema = z.strictObject({
+  provider: z.enum(SOCIAL_PROVIDERS),
+  idToken: idTokenSchema,
+  nonce: nonceSchema.optional(),
+  /** A Apple só envia o nome no primeiro login, para o app, não no token. */
+  displayName: displayNameSchema.optional(),
 });
+
+/** Excluir a conta exige provar que é você: com a senha ou entrando de novo pelo Google/Apple. */
+export const deleteMeSchema = z.union([
+  z.strictObject({ password: loginPasswordSchema }),
+  z.strictObject({ provider: z.enum(SOCIAL_PROVIDERS), idToken: idTokenSchema, nonce: nonceSchema.optional() }),
+]);
 
 export const pushTokenSchema = z.strictObject({
   token: z.string().regex(/^Expo(nent)?PushToken\[[A-Za-z0-9_-]{10,200}\]$/, 'Token de notificação inválido'),

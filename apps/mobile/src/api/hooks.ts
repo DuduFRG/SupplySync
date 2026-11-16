@@ -285,7 +285,9 @@ export function useUpdateMe() {
 
 export function useDeleteAccount() {
   return useMutation({
-    mutationFn: (password: string) => request<void>('/v1/me', { method: 'DELETE', body: { password } }),
+    /** Com senha, ou com um novo login do Google/Apple para contas sem senha. */
+    mutationFn: (proof: { password: string } | { provider: 'google' | 'apple'; idToken: string; nonce?: string }) =>
+      request<void>('/v1/me', { method: 'DELETE', body: proof }),
   });
 }
 
@@ -297,6 +299,8 @@ export const authApi = {
     request<AuthTokens>('/v1/auth/verify-email', { method: 'POST', body, auth: false }),
   resendCode: (body: { email: string; captchaToken?: string }) =>
     request<{ message: string }>('/v1/auth/resend-code', { method: 'POST', body, auth: false }),
+  social: (body: { provider: 'google' | 'apple'; idToken: string; nonce?: string; displayName?: string }) =>
+    request<AuthTokens>('/v1/auth/social', { method: 'POST', body, auth: false }),
   login: (body: { email: string; password: string; captchaToken?: string }) =>
     request<AuthTokens>('/v1/auth/login', { method: 'POST', body, auth: false }),
   forgotPassword: (body: { email: string; captchaToken?: string }) =>

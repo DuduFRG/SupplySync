@@ -16,7 +16,7 @@ export const RESPONSAVEL = {
   cidade: '[CIDADE/UF]',
 };
 
-export const VERSAO = '16 de novembro de 2026';
+export const VERSAO = '17 de novembro de 2026';
 
 export interface LegalSection {
   title: string;
@@ -47,7 +47,7 @@ export const TERMOS: LegalDocument = {
     {
       title: '2. Quem pode usar',
       paragraphs: [
-        'O SupplySync é destinado a maiores de 18 anos. Ao criar uma conta, você confirma ter 18 anos ou mais.',
+        'O SupplySync é destinado a maiores de 18 anos. Ao criar uma conta, inclusive com Google ou Apple, você confirma ter 18 anos ou mais.',
         'Você é responsável por manter sua senha em segredo e por tudo o que for feito com a sua conta. Se suspeitar de uso indevido, troque a senha e fale com a gente.',
       ],
     },
@@ -111,6 +111,7 @@ export const PRIVACIDADE: LegalDocument = {
       title: '1. Dados que coletamos',
       paragraphs: [
         'Conta: seu nome (como a casa te chama), e-mail e senha. A senha nunca é guardada em texto: armazenamos apenas um código irreversível gerado a partir dela (hash Argon2id).',
+        'Se você entrar com Google ou Apple: recebemos deles apenas seu nome, seu e-mail (no caso da Apple, pode ser um e-mail de encaminhamento que esconde o seu) e um identificador da sua conta naquele serviço. Não recebemos sua senha do Google ou da Apple, nem acesso a outros dados seus.',
         'Uso da casa: casas que você cria ou participa, itens, sinalizações (acabando, acabou), observações, fotos que você decidir anexar, compras, valores, divisões e pagamentos registrados.',
         'Aparelho: se você ativar os avisos, um identificador de notificação do seu celular. Guardamos também, por segurança, o endereço de internet (IP) e o horário das requisições em registros técnicos temporários.',
         'Fotos: antes do envio, o app remove os dados escondidos da imagem, inclusive a localização GPS.',
@@ -122,7 +123,7 @@ export const PRIVACIDADE: LegalDocument = {
       paragraphs: [
         'Para criar sua conta, fazer o app funcionar, mostrar o estado da casa, sugerir quem compra, calcular a divisão e enviar avisos: execução do contrato com você (art. 7º, V, da LGPD).',
         'Para proteger contas e o serviço contra fraudes, robôs e acessos indevidos (limites de tentativas, verificação antirrobô, registros técnicos): legítimo interesse e prevenção à fraude (art. 7º, IX, e art. 11, II, "g").',
-        'Para enviar e-mails de confirmação e de redefinição de senha: execução do contrato.',
+        'Para enviar e-mails de confirmação, de boas-vindas e de redefinição de senha: execução do contrato.',
         'Para cumprir obrigações legais, quando houver: cumprimento de obrigação legal (art. 7º, II).',
       ],
     },
@@ -130,7 +131,7 @@ export const PRIVACIDADE: LegalDocument = {
       title: '3. Com quem compartilhamos',
       paragraphs: [
         'Com os moradores da sua casa: tudo o que você registra na casa fica visível para eles.',
-        'Com prestadores de serviço que operam dados em nosso nome, apenas no necessário: hospedagem do servidor e do banco de dados, envio de e-mails (Resend), envio de notificações (Expo, Apple e Google), proteção contra ataques e robôs (Cloudflare) e, para assinaturas, as lojas de aplicativos.',
+        'Com prestadores de serviço que operam dados em nosso nome, apenas no necessário: hospedagem do servidor e do banco de dados, envio de e-mails (Google Gmail ou Brevo), envio de notificações (Expo, Apple e Google), login com Google ou Apple (quando você escolhe essa opção), proteção contra ataques e robôs (Cloudflare) e, para assinaturas, as lojas de aplicativos.',
         'Alguns desses prestadores podem processar dados fora do Brasil. Nesses casos, exigimos garantias adequadas de proteção, conforme os arts. 33 a 36 da LGPD.',
         'Com autoridades, somente quando houver obrigação legal ou ordem judicial.',
       ],
@@ -139,7 +140,7 @@ export const PRIVACIDADE: LegalDocument = {
       title: '4. Por quanto tempo guardamos',
       paragraphs: [
         'Enquanto sua conta existir. Códigos de confirmação expiram em 15 minutos. Sessões de acesso expiram em até 30 dias sem uso. Registros técnicos de segurança são mantidos pelo tempo necessário à segurança e ao cumprimento da lei (Marco Civil da Internet, art. 15, quando aplicável).',
-        'Ao excluir a conta, apagamos seu nome, e-mail, senha e identificadores de notificação. As compras que você registrou continuam nas contas da casa, associadas a um perfil anônimo chamado "Ex-morador", para não alterar os saldos dos outros moradores.',
+        'Ao excluir a conta, apagamos seu nome, e-mail, senha, identificadores de notificação e a ligação com Google ou Apple. As compras que você registrou continuam nas contas da casa, associadas a um perfil anônimo chamado "Ex-morador", para não alterar os saldos dos outros moradores.',
       ],
     },
     {

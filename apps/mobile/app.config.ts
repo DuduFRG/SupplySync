@@ -8,6 +8,12 @@ const IS_PROD = process.env.APP_VARIANT === 'production';
 // Vazio em desenvolvimento: o app descobre sozinho o endereço do computador (ver src/api/client.ts).
 const API_URL = process.env.EXPO_PUBLIC_API_URL?.trim() || null;
 
+// Login com Google: IDs de cliente OAuth do Google Cloud (públicos, não são segredos).
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim() || null;
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim() || null;
+// O iOS precisa do ID do cliente "ao contrário" como esquema de URL para voltar ao app.
+const GOOGLE_IOS_URL_SCHEME = GOOGLE_IOS_CLIENT_ID ? GOOGLE_IOS_CLIENT_ID.split('.').reverse().join('.') : null;
+
 if (IS_PROD && !API_URL?.startsWith('https://')) {
   throw new Error('EXPO_PUBLIC_API_URL precisa ser https em builds de produção');
 }
@@ -26,6 +32,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: 'app.supplysync.mobile',
     supportsTablet: false,
     config: { usesNonExemptEncryption: false },
+    usesAppleSignIn: true,
     infoPlist: {
       NSCameraUsageDescription: 'Para você fotografar um item que acabou e mostrar para a casa.',
       NSPhotoLibraryUsageDescription: 'Para anexar a foto de um item que acabou.',
@@ -47,6 +54,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     'expo-secure-store',
     'expo-font',
+    'expo-apple-authentication',
+    ...(GOOGLE_IOS_URL_SCHEME
+      ? [['@react-native-google-signin/google-signin', { iosUrlScheme: GOOGLE_IOS_URL_SCHEME }] as [string, object]]
+      : []),
     ['expo-splash-screen', { image: './assets/splash-icon.png', imageWidth: 120, backgroundColor: '#F7F8F5' }],
     ['expo-notifications', { color: '#2F7A55' }],
     [
@@ -63,6 +74,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     apiUrl: API_URL,
     turnstileSiteKey: process.env.EXPO_PUBLIC_TURNSTILE_SITE_KEY?.trim() || null,
     turnstileBaseUrl: process.env.EXPO_PUBLIC_TURNSTILE_BASE_URL?.trim() || null,
+    googleWebClientId: GOOGLE_WEB_CLIENT_ID,
+    googleIosClientId: GOOGLE_IOS_CLIENT_ID,
     eas: { projectId: process.env.EAS_PROJECT_ID },
   },
 });

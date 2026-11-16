@@ -14,7 +14,8 @@ Para casais, famílias e grupos de 3 a 6 moradores que perdem tempo (e paciênci
 - **Avisos push** quando um item essencial acaba: quem está na vez recebe "é a sua vez"; o resto da casa sabe quem vai comprar.
 - **Lista de compras automática**, separada entre "sua vez" e "outras pessoas", com estimativa de valor e compartilhamento em texto (WhatsApp, notas etc.).
 - **Divisão de custos**: registrar compra, dividir entre quem participa, saldo por pessoa e sugestão do menor número de pagamentos.
-- **Freemium** aplicado no servidor: 1 casa, 4 moradores, 20 itens e 60 dias de histórico no plano gratuito.
+- **Freemium** aplicado no servidor: 1 casa, até 6 moradores, 20 itens e 60 dias de histórico no plano gratuito.
+- **Entrar com Google ou Apple**, além de e-mail e senha, e e-mail de boas-vindas ao criar a conta.
 - **Segurança desde o início**: veja [docs/SECURITY.md](docs/SECURITY.md).
 
 ## Stack
@@ -57,3 +58,4 @@ Os testes de integração usam um PostgreSQL real. Defina `TEST_DATABASE_URL` ap
 ## Publicação
 
 Passo a passo para produção, Cloudflare (WAF), Google Play e App Store em [docs/DEPLOY.md](docs/DEPLOY.md).
+Para ligar o envio de e-mails e o login com Google/Apple, de graça: [docs/EMAIL-E-LOGIN-SOCIAL.md](docs/EMAIL-E-LOGIN-SOCIAL.md).

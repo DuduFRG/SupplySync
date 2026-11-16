@@ -13,6 +13,8 @@ const ALLOWED_HOSTS = new Set([
   'challenges.cloudflare.com', // Turnstile
   'api.resend.com', // e-mail transacional
   'exp.host', // Expo Push
+  'www.googleapis.com', // chaves públicas do login com Google
+  'appleid.apple.com', // chaves públicas do login com Apple
 ]);
 
 const MAX_RESPONSE_BYTES = 256 * 1024;
